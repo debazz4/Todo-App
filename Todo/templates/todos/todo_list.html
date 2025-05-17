@@ -1,0 +1,122 @@
+{% load static %}
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
+    
+    <title>Todos</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row mt-5">
+            <div class="col-md-8 offset-md-2">
+    
+                <div class="card">
+                    <div class="card-header shadow-sm bg-white">
+                        <h1 class="display-5 text-info"><i class="fas fa-check-double"></i>Todos</h1>
+                    </div>
+                    <div class="card-body">
+                        
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <form action="{% url 'insert_todo_item' %}" method="POST" autocomplete="off">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" name="content">
+                                        <input type="date" name="due_date">
+                                        <!--<input type="datetime_local" name="reminder">-->
+                                        <div class="input-group-append text-info">
+                                            <span class="input-group-text bg-white py-0">
+                                                <button type="submit" class="btn btn-sm text-info">
+                                                    <i class="fas fa-plus-circle fa-lg"></i>
+                                                </button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                            {% for todo in todo_list %}
+                            <li class="list-group-item">
+                                <div id="todo-display-{{ todo.id }}" class="d-flex justify-content-between align-items-center">
+                                    <form method="POST" action="{% url 'toggle_complete' todo.id %}" class="d-flex align-items-center gap-2">
+                                        {% csrf_token %}
+                                        <input type="checkbox" onchange="this.form.submit()" {% if todo.completed %}checked{% endif %}>
+                                        <label style="{% if todo.completed %}text-decoration: line-through red;{% endif %}">
+                                            <span class="px-2">{{ todo.content }}</span>
+                                            {% if todo.due_date %}
+                                            <small class="text-muted">Due: {{ todo.due_date }}</small>
+                                            {% endif %}
+                                            {% if todo.reminder %}
+                                            <small class="text-muted">Reminder: {{ todo.reminder }}</small>
+                                            {% endif %}
+                                        </label>
+                                    </form>
+                                    <div>
+                                        
+                                        
+                                        <!-- Edit button -->
+                                        <button class="btn" onclick="enableEdit({{ todo.id }}, '{{ todo.content }}')">
+                                            <i class="fas fa-edit text-primary"></i>
+                                        </button>
+                            
+                                        <!-- Delete form -->
+                                        <form action="{% url 'delete_todo_item' todo.id %}" method="post" class="d-inline">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn">
+                                                <i class="fas fa-trash-alt text-danger"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            
+                                <!-- Hidden edit form -->
+                                <form id="edit-form-{{ todo.id }}" action="{% url 'update_todo_item' todo.id %}" method="post" class="d-none mt-2">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <input type="text" name="content" id="edit-input-{{ todo.id }}" class="form-control">
+                                        <button class="btn btn-success" type="submit">Update</button>
+                                        <button class="btn btn-secondary" type="button" onclick="cancelEdit({{ todo.id }})">Cancel</button>
+                                    </div>
+                                </form>
+                            </li>
+                            {% endfor %}
+
+                        </ul>
+                    </div>
+                        
+                </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"
+        integrity="sha384-J6qa4849blE2+poT4WnyKhv5vZF5SrPo0iEjwBvKU7imGFAV0wwj1yYfoRSJoZ+n"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/js/bootstrap.min.js"
+        integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6"
+        crossorigin="anonymous"></script>
+        
+        <script>
+            function enableEdit(id, content) {
+                document.getElementById('todo-display-' + id).classList.add('d-none');
+                const form = document.getElementById('edit-form-' + id);
+                form.classList.remove('d-none');
+                document.getElementById('edit-input-' + id).value = content;
+            }
+
+            function cancelEdit(id) {
+                document.getElementById('edit-form-' + id).classList.add('d-none');
+                document.getElementById('todo-display-' + id).classList.remove('d-none');
+            }
+        </script>
+            
+    
+</body>
+</html>
